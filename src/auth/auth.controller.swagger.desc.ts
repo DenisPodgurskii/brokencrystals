@@ -2,9 +2,19 @@ export const SWAGGER_DESC_LOGIN_WITH_RSA_JWT_KEYS = `Authenticates user and retu
 
 export const SWAGGER_DESC_LOGIN_WITH_KID_SQL_JWT = `Authenticates user and returns JWT token with HCA256. The key id is provided in KID protocol.`;
 
+export const SWAGGER_DESC_LOGIN_WITH_KID_CMD_JWT = `Authenticates user and returns JWT token with HCA256. The key id is provided in KID protocol.`;
+
+export const SWAGGER_DESC_LOGIN_WITH_KID_PATH_JWT = `Authenticates user and returns JWT token with HCA256. The key id is provided in KID protocol.`;
+
 export const SWAGGER_DESC_CALL_OIDC_CLIENT = `Get OIDC client configuration. Returns public OIDC. These keys are configurable via CLIENT_ID, CLIENT_SECRET env variables.`;
 
 export const SWAGGER_DESC_VALIDATE_WITH_KID_SQL_JWT = `Validates the JWT header and returns secret if the header is valid. Executes SQL query by concatenating the KID value with the query.
+    In case of None algorithm ignores the signature.`;
+
+export const SWAGGER_DESC_VALIDATE_WITH_KID_CMD_JWT = `Validates the JWT header and returns secret if the header is valid. Executes CMD by concatenating the KID value with the command.
+    In case of None algorithm ignores the signature.`;
+
+export const SWAGGER_DESC_VALIDATE_WITH_KID_PATH_JWT = `Validates the JWT header and returns secret if the header is valid. Executes path traversal by using the KID value as a path.
     In case of None algorithm ignores the signature.`;
 
 export const SWAGGER_DESC_LOGIN_WITH_WEAK_KEY_JWT = `Authenticates user and returns JWT token with HCA256. The key is configurable on server via the JWT_SECRET_KEY env variable.`;

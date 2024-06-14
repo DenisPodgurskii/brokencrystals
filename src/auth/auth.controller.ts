@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  ForbiddenException,
   Get,
   HttpStatus,
   InternalServerErrorException,
@@ -34,6 +33,8 @@ import {
   SWAGGER_DESC_LOGIN_WITH_JKU_JWT,
   SWAGGER_DESC_LOGIN_WITH_JWK_JWT,
   SWAGGER_DESC_LOGIN_WITH_KID_SQL_JWT,
+  SWAGGER_DESC_LOGIN_WITH_KID_CMD_JWT,
+  SWAGGER_DESC_LOGIN_WITH_KID_PATH_JWT,
   SWAGGER_DESC_LOGIN_WITH_RSA_JWT_KEYS,
   SWAGGER_DESC_LOGIN_WITH_WEAK_KEY_JWT,
   SWAGGER_DESC_LOGIN_WITH_X5C_JWT,
@@ -41,6 +42,8 @@ import {
   SWAGGER_DESC_VALIDATE_WITH_JKU_JWT,
   SWAGGER_DESC_VALIDATE_WITH_JWK_JWT,
   SWAGGER_DESC_VALIDATE_WITH_KID_SQL_JWT,
+  SWAGGER_DESC_VALIDATE_WITH_KID_CMD_JWT,
+  SWAGGER_DESC_VALIDATE_WITH_KID_PATH_JWT,
   SWAGGER_DESC_VALIDATE_WITH_WEAK_KEY_JWT,
   SWAGGER_DESC_VALIDATE_WITH_X5C_JWT,
   SWAGGER_DESC_VALIDATE_WITH_X5U_JWT,
@@ -132,7 +135,7 @@ export class AuthController {
     if (req.op === FormMode.OIDC) {
       loginData = await this.loginOidc(req);
     } else {
-      loginData = await this.loginBasic(req);
+      loginData = await this.login(req);
     }
 
     const { token, ...loginResponse } = loginData;
@@ -265,7 +268,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithKIDSqlJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -303,6 +306,136 @@ export class AuthController {
     };
   }
 
+///////////////////CMD
+
+@Post('jwt/kid-cmd/login')
+  @ApiCreatedResponse({
+    type: LoginJwtResponse,
+  })
+  @ApiUnauthorizedResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' },
+        location: { type: 'string' },
+      },
+    },
+    description: 'invalid credentials',
+  })
+  @ApiOperation({
+    description: SWAGGER_DESC_LOGIN_WITH_KID_CMD_JWT,
+  })
+  async loginWithKIDCMDJwt(
+    @Body() req: LoginRequest,
+    @Res({ passthrough: true }) res: FastifyReply,
+  ): Promise<LoginResponse> {
+    this.logger.debug('Call loginWithKIDCMDJwt');
+    const profile = await this.login(req);
+
+    res.header(
+      'authorization',
+      await this.authService.createToken(
+        { user: profile.email },
+        JwtProcessorType.CMD_KID,
+      ),
+    );
+
+    return profile;
+  }
+
+
+  @Get('jwt/kid-cmd/validate')
+  @UseGuards(AuthGuard)
+  @JwtType(JwtProcessorType.CMD_KID)
+  @ApiOkResponse({
+    type: JwtValidationResponse,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'invalid credentials',
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' },
+        location: { type: 'string' },
+      },
+    },
+  })
+  @ApiOperation({
+    description: SWAGGER_DESC_VALIDATE_WITH_KID_CMD_JWT,
+  })
+  async validateWithKIDCMDJwt(): Promise<JwtValidationResponse> {
+    return {
+      secret: 'this is our secret',
+    };
+  }
+
+/////////////////// PATH
+@Post('jwt/kid-path/login')
+  @ApiCreatedResponse({
+    type: LoginJwtResponse,
+  })
+  @ApiUnauthorizedResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' },
+        location: { type: 'string' },
+      },
+    },
+    description: 'invalid credentials',
+  })
+  @ApiOperation({
+    description: SWAGGER_DESC_LOGIN_WITH_KID_PATH_JWT,
+  })
+  async loginWithKIDPathJwt(
+    @Body() req: LoginRequest,
+    @Res({ passthrough: true }) res: FastifyReply,
+  ): Promise<LoginResponse> {
+    this.logger.debug('Call loginWithKIDPathJwt');
+    const profile = await this.login(req);
+
+    res.header(
+      'authorization',
+      await this.authService.createToken(
+        { user: profile.email },
+        JwtProcessorType.PATH_KID,
+      ),
+    );
+
+    return profile;
+  }
+
+
+  @Get('jwt/kid-path/validate')
+  @UseGuards(AuthGuard)
+  @JwtType(JwtProcessorType.PATH_KID)
+  @ApiOkResponse({
+    type: JwtValidationResponse,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'invalid credentials',
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' },
+        location: { type: 'string' },
+      },
+    },
+  })
+  @ApiOperation({
+    description: SWAGGER_DESC_VALIDATE_WITH_KID_PATH_JWT,
+  })
+  async validateWithKIDPathJwt(): Promise<JwtValidationResponse> {
+    return {
+      secret: 'this is our secret',
+    };
+  }
+  /////////////////
+
+
+
+
+
   @Post('jwt/weak-key/login')
   @ApiCreatedResponse({
     type: LoginJwtResponse,
@@ -325,7 +458,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithKIDSqlJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -385,7 +518,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithJKUJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -445,7 +578,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithJWKJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -505,7 +638,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithX5CJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -565,7 +698,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithX5UJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'Authorization',
@@ -625,7 +758,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<LoginResponse> {
     this.logger.debug('Call loginWithHMACJwt');
-    const profile = await this.loginBasic(req);
+    const profile = await this.login(req);
 
     res.header(
       'authorization',
@@ -691,7 +824,7 @@ export class AuthController {
     }
   }
 
-  private async loginBasic(req: LoginRequest): Promise<LoginData> {
+  private async login(req: LoginRequest): Promise<LoginData> {
     let user: User;
 
     try {
@@ -706,13 +839,6 @@ export class AuthController {
     if (!user || !(await passwordMatches(req.password, user.password))) {
       throw new UnauthorizedException({
         error: 'Invalid credentials',
-        location: __filename,
-      });
-    }
-
-    if (!user.isBasic) {
-      throw new ForbiddenException({
-        error: 'Invalid authentication method for this user',
         location: __filename,
       });
     }

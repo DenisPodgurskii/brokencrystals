@@ -11,6 +11,8 @@ import { JwtTokenWithJKUProcessor } from './jwt/jwt.token.with.jku.processor';
 import { JwtTokenWithJWKProcessor } from './jwt/jwt.token.with.jwk.processor';
 import { JwtTokenWithRSAKeysProcessor } from './jwt/jwt.token.with.rsa.keys.processor';
 import { JwtTokenWithSqlKIDProcessor } from './jwt/jwt.token.with.sql.kid.processor';
+import { JwtTokenWithCMDKIDProcessor } from './jwt/jwt.token.with.cmd.kid.processor';
+import { JwtTokenWithPathKIDProcessor } from './jwt/jwt.token.with.path.kid.processor';
 import { JwtTokenWithWeakKeyProcessor } from './jwt/jwt.token.with.weak.key.processor';
 import { JwtTokenWithX5CKeyProcessor } from './jwt/jwt.token.with.x5c.key.processor';
 import { JwtTokenWithX5UKeyProcessor } from './jwt/jwt.token.with.x5u.key.processor';
@@ -20,6 +22,8 @@ import { JwtTokenWithRSASignatureKeysProcessor } from './jwt/jwt.token.with.rsa.
 export enum JwtProcessorType {
   RSA,
   SQL_KID,
+  CMD_KID,
+  PATH_KID,
   WEAK_KEY,
   X5C,
   X5U,
@@ -90,6 +94,14 @@ export class AuthService {
     this.processors.set(
       JwtProcessorType.SQL_KID,
       new JwtTokenWithSqlKIDProcessor(this.em, jwtSecretKey),
+    );
+    this.processors.set(
+      JwtProcessorType.CMD_KID,
+      new JwtTokenWithCMDKIDProcessor(this.em, jwtSecretKey),
+    );
+    this.processors.set(
+      JwtProcessorType.PATH_KID,
+      new JwtTokenWithPathKIDProcessor(this.em, jwtSecretKey),
     );
     this.processors.set(
       JwtProcessorType.WEAK_KEY,

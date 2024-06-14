@@ -22,13 +22,13 @@ export class JwtTokenWithSqlKIDProcessor extends JwtTokenProcessor {
       this.key,
       header.kid,
     );
-    this.log.debug(`Executing key fetching query: ${query}`);
+    this.log.error(`Executing key fetching query: ${query}`);
     const keyRow: { key: string } = await this.em
       .getConnection()
       .execute(query);
-    this.log.debug(`Key is ${keyRow.key}`);
+    this.log.error(`Key is ${keyRow[0].key}`);
 
-    return decode(token, this.key, false, 'HS256');
+    return decode(token, keyRow[0].key, false, 'HS256');
   }
 
   async createToken(payload: unknown): Promise<string> {
